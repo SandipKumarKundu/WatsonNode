@@ -12,7 +12,7 @@ app.controller('ChatController',['$scope','$localStorage','$filter','$location',
     scope.OpenFeedback=false;
     scope.rating;
     scope.ratingText=["Hated it","Disliked it","It's OK","Liked it","Loved it"];
-    let StartofConv=false;
+    var StartofConv=false;
     if(!StartofConv){
       StartofConv=true;
         
