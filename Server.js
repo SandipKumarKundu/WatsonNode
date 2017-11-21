@@ -1,3 +1,5 @@
+
+
 var express=require('express');
 var app=express();
 var path = require('path');
@@ -12,7 +14,9 @@ let CryptoJS =require('crypto-js');
 const fs = require('.//Log');//Calling Node Fs
 //TimeOut ----------
 const util = require('util');
-
+let StartOfConv=false; 
+let ContextVariable=[];//Capture all context variables
+let Context={};
 router.get('/',function(req,res){
     
     res.sendFile(path.join(__dirname, '/', 'public','/','Views', 'index.html'));
@@ -60,21 +64,57 @@ let ReceivedData={};
     ReceivedData.Text=req.query.y;
     ReceivedData.Time=new Date();
      ReceivedData.Type="Sent";
-
+     let start=req.query.m;
+    //console.log("start"+start+"Typew of start"+typeof(start));
     setTimeout(function(){ var str=new Date()+"   "+"Author : "+ ReceivedData.Author + "   Message :  "+ ReceivedData.Text+"\r\n" 
     Log.CreateLog(str);
 
 console.log("decrypted"+JSON.stringify(ReceivedData));
+if(start=="true"){
+  console.log("This is start of message");
+  watson.message({
+    input:{ text: '' },
+    workspace_id: '6158aa0e-620c-4d57-aa03-e9bca3462dbb'
+}, function(err, response) {
+    if (err) {
+      console.error(err);
+    } else {
+            var text='';
+        sentdata.Author="Watson";
+        sentdata.Type="Received";
+        if(response.output.text.length>1){
+            for(data in response.output.text ){
+            text=text+'\n'+response.output.text[data];
+            }
+        }
+        else
+        text=response.output.text[0];
+        Context=response.context;
+        StartOfConv=response.context.StartOfConv;
+        sentdata.Text=text;
+        sentdata.Time=new Date();
+        console.log(JSON.stringify(response));
+        var str=new Date()+"   "+"Author : "+ "Watson" + "   Message :  "+ sentdata.Text+"\r\n" 
+        Log.CreateLog(str);
+    
+        res.json(sentdata);
+    }
+}); 
 
-message.push(ReceivedData);
+}
 
+
+          else{
+            console.log("After Start conversation");
          watson.message({
             input:{ text: ReceivedData.Text },
-            workspace_id: '6158aa0e-620c-4d57-aa03-e9bca3462dbb'
+            workspace_id: '6158aa0e-620c-4d57-aa03-e9bca3462dbb',
+            context:Context  
         }, function(err, response) {
             if (err) {
               console.error(err);
             } else {
+              Context=response.context;
                     var text='';
                 sentdata.Author="Watson";
                 sentdata.Type="Received";
@@ -85,21 +125,32 @@ message.push(ReceivedData);
                 }
                 else
                 text=response.output.text[0];
+                let action=response.output.action;
+                if(action!=null||action!=undefined){
+                  //callAction(action);
+                  if(action[0]=="ConfirmCarbooking"){
+                    response.context.CarBookingDate=null;
+                    response.context.CarBookingTime=null;
+                    response.context.CarBookingConfirmation=null;
+                  }
+                  console.log("Actions is"+action);
+                }
                 sentdata.Text=text;
                 sentdata.Time=new Date();
                 console.log(JSON.stringify(response));
                 var str=new Date()+"   "+"Author : "+ "Watson" + "   Message :  "+ sentdata.Text+"\r\n" 
                 Log.CreateLog(str);
-            
+                
                 res.json(sentdata);
             }
+          
         }); 
-
+      }//End of else
  }, 300);
 
 
            
-//res.sendStatus;
+res.sendStatus;
   });
 
 

@@ -7,11 +7,32 @@ app.controller('ChatController',['$scope','$localStorage','$filter','$location',
     scope.sendData={};
     scope.Text;
     scope.regions=["ACT","NSW","NT","QLD","SA","TAS","VIC","WA"];
-    scope.showButtons=true;
+    scope.showButtons=false;
     scope.TextSent='';
     scope.OpenFeedback=false;
     scope.rating;
     scope.ratingText=["Hated it","Disliked it","It's OK","Liked it","Loved it"];
+    let StartofConv=false;
+    if(!StartofConv){
+      StartofConv=true;
+        
+        http.post(serverurl+"watson?m="+true+"&y="+''+"&z="+'Sandip'+"&t="+new Date()).then(function(request,response){
+          
+         console.log("success",JSON.stringify(request.data));
+         scope.message.push(request.data);
+         var old='';
+         location.hash(scope.message.length-1)
+      
+               anchorScroll();
+               timeout(function(){location.hash(old)},100);
+       }),function error(response){
+           
+           console.log(response);
+      
+       }
+      
+      
+    }
     //rating
     scope.storeRating=function(rating){
       scope.OpenFeedback=true;
@@ -28,19 +49,20 @@ scope.LockChat=function(){
   scope.isChatOpenFlag=false;
 
 }
-scope.Feedback=function(data){
-    scope.showButtons=false;
-   var data1=data;
-    scope.sendMessage(data1);
-    //window.location.href='http://www.lawstuff.org.au/';
-}
+// scope.Feedback=function(data){
+//     scope.showButtons=false;
+//    var data1=data;
+//     scope.sendMessage(data1);
+//     //window.location.href='http://www.lawstuff.org.au/';
+// }
 
+//Init Message//
 
 
     scope.sendMessage=function(data){
       scope.Text=data;
       //document.getElementById('input').innerHTML='Type your message…';
-    if(scope.Text!=null |scope.Text!=undefined)
+    if(scope.Text!=null ||scope.Text!=undefined)
     {
     var message={};
 
@@ -91,7 +113,7 @@ scope.Feedback=function(data){
         anchorScroll();
         timeout(function(){location.hash(old)},100);
 scope.Text=''
-    http.post(serverurl+"watson?x="+message.Type+"&y="+message.Text+"&z="+message.Author+"&t="+message.Time).then(function(request,response){
+    http.post(serverurl+"watson?m="+false+"&y="+message.Text+"&z="+message.Author+"&t="+message.Time).then(function(request,response){
        
       console.log("success",JSON.stringify(request.data));
       scope.message.push(request.data);
